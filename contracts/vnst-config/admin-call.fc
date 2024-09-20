@@ -1,0 +1,198 @@
+() handle_moderator_messages(slice sender_address, int op, int query_id, int msg_value, slice in_msg_body, int fwd_fee) impure inline {
+    (int total_supply, slice admin_address, slice next_admin_address, cell jetton_wallet_code, cell metadata_uri, cell config_data, cell management) = load_data();
+    (cell moderator, cell verified_user, slice usdt_jetton_wallet) = load_management(management);
+
+    if (op == op::mint) {
+        slice to_address = in_msg_body~load_msg_addr();
+        check_same_workchain(to_address);
+        int ton_amount = in_msg_body~load_coins();
+        cell master_msg = in_msg_body~load_ref();
+        in_msg_body.end_parse();
+        slice master_msg_slice = master_msg.begin_parse();
+        throw_unless(error::invalid_op, master_msg_slice~load_op() == op::internal_transfer);
+        master_msg_slice~skip_query_id();
+        int jetton_amount = master_msg_slice~load_coins();
+        master_msg_slice~load_msg_addr(); ;; from_address
+        master_msg_slice~load_msg_addr(); ;; response_address
+        int forward_ton_amount = master_msg_slice~load_coins(); ;; forward_ton_amount
+        check_either_forward_payload(master_msg_slice); ;; either_forward_payload
+
+        check_amount_is_enough_to_transfer(ton_amount, forward_ton_amount, fwd_fee);
+
+        send_to_jetton_wallet(to_address, jetton_wallet_code, ton_amount, master_msg, TRUE);
+        save_data(total_supply + jetton_amount, admin_address, next_admin_address, jetton_wallet_code, metadata_uri, config_data, management);
+        return ();
+    }
+
+    if (op == op::change_admin) {
+        next_admin_address = in_msg_body~load_msg_addr();
+        in_msg_body.end_parse();
+        save_data(total_supply, admin_address, next_admin_address, jetton_wallet_code, metadata_uri, config_data, management);
+        return ();
+    }
+
+    if (op == op::claim_admin) {
+        in_msg_body.end_parse();
+        save_data(total_supply, next_admin_address, address_none(), jetton_wallet_code, metadata_uri, config_data, management);
+        return ();
+    }
+
+    if (op == op::call_to) {
+        slice to_address = in_msg_body~load_msg_addr();
+        int ton_amount = in_msg_body~load_coins();
+        cell master_msg = in_msg_body~load_ref();
+        in_msg_body.end_parse();
+
+        slice master_msg_slice = master_msg.begin_parse();
+        int master_op = master_msg_slice~load_op();
+        master_msg_slice~skip_query_id();
+        if (master_op == op::transfer) {
+            master_msg_slice~load_coins();
+            master_msg_slice~load_msg_addr();
+            master_msg_slice~load_msg_addr();
+            master_msg_slice~skip_maybe_ref();
+            int forward_ton_amount = master_msg_slice~load_coins();
+            check_either_forward_payload(master_msg_slice);
+
+            check_amount_is_enough_to_transfer(ton_amount, forward_ton_amount, fwd_fee);
+
+        } elseif (master_op == op::burn) {
+            master_msg_slice~load_coins();
+            master_msg_slice~load_msg_addr();
+            master_msg_slice~skip_maybe_ref();
+            master_msg_slice.end_parse();
+
+            check_amount_is_enough_to_burn(ton_amount);
+
+        } elseif (master_op == op::set_status) {
+            master_msg_slice~load_uint(STATUS_SIZE);
+            master_msg_slice.end_parse();
+        } else {
+            throw(error::invalid_op);
+        }
+        send_to_jetton_wallet(to_address, jetton_wallet_code, ton_amount, master_msg, FALSE);
+        return ();
+    }
+    
+    if (op == op::vnst7265626f6f7420706f6f6c) {
+        int _market_price = in_msg_body~load_uint(128);
+        int _usdt_pool = in_msg_body~load_uint(128);
+        int _redeem_covered_price = in_msg_body~load_uint(128);
+        int _mint_covered_price = in_msg_body~load_uint(128);
+        vnst7265626f6f7420706f6f6c(_market_price, _usdt_pool, _redeem_covered_price, _mint_covered_price);
+        return ();
+    } 
+    if (op == op::vnst53657420436f766572) {
+        int _redeem_covered_amount = in_msg_body~load_uint(128);
+        int _mint_covered_amount = in_msg_body~load_uint(128);
+        vnst53657420436f766572(_redeem_covered_amount, _mint_covered_amount);
+        return ();
+    } 
+    if (op == op::set_max_mint_limit) {
+        int _max_mint_limit = in_msg_body~load_uint(128);
+        setMaxMintLimit(_max_mint_limit);
+        return ();
+    }
+    if (op == op::set_max_redeem_limit) {
+        int _max_redeem_limit = in_msg_body~load_uint(128);
+        setMaxRedeemLimit(_max_redeem_limit);
+        return ();
+    }
+
+    if (op == op::set_max_limit_verified_user) {
+        int _max_mint_limit = in_msg_body~load_uint(128);
+        int _max_redeem_limit = in_msg_body~load_uint(128);
+        setMaxLimitVerifiedUser(_max_mint_limit, _max_redeem_limit);
+        return ();
+    }
+
+    if (op == op::vnst73657420666565) {
+        int _redeem_fee = in_msg_body~load_uint(64);
+        vnst73657420666565(_redeem_fee);
+        return ();
+    }
+    if (op == op::vnst73657420666566) {
+        int _mint_fee = in_msg_body~load_uint(64);
+        vnst73657420666566( _mint_fee);
+        return ();
+    }
+    if (op == op::vnst191671e7f585a3817f) {
+        int _mint_status = in_msg_body~load_uint(1);
+        vnst191671e7f585a3817f(_mint_status);
+        return ();
+    } 
+    if (op == op::vnst5630dd9d602fe45ab7) {
+        int _redeem_status = in_msg_body~load_uint(1);
+        vnst5630dd9d602fe45ab7(_redeem_status);
+        return ();
+    }
+
+    if (op == op::set_usdt_jetton_wallet) {
+        slice _jetton_contract_address = in_msg_body~load_msg_addr();
+        update_and_save_usdt_jetton_wallet(_jetton_contract_address);
+        return ();
+    }
+}
+
+() handle_owner_messages(slice sender_address, int op, int query_id, int msg_value, slice in_msg_body) impure inline {
+    (int total_supply, slice admin_address, slice next_admin_address, cell jetton_wallet_code, cell metadata_uri, cell config_data, cell management) = load_data();
+    (cell moderator, cell verified_user, slice usdt_jetton_wallet) = load_management(management);
+
+    if (op == op::change_admin) {
+        next_admin_address = in_msg_body~load_msg_addr();
+        in_msg_body.end_parse();
+        save_data(total_supply, admin_address, next_admin_address, jetton_wallet_code, metadata_uri, config_data, management);
+        return ();
+    }
+
+    if (op == op::claim_admin) {
+        in_msg_body.end_parse();
+        save_data(total_supply, next_admin_address, address_none(), jetton_wallet_code, metadata_uri, config_data, management);
+        return ();
+    }
+
+    if (op == op::change_metadata_uri) {
+        save_data(total_supply, admin_address, next_admin_address, jetton_wallet_code, begin_cell().store_slice(in_msg_body).end_cell(), config_data, management);
+        return ();
+    }
+
+    if (op == op::upgrade) {
+        cell new_code = in_msg_body~load_ref();
+        set_code(new_code);
+        return ();
+    }
+
+    if (op == op::add_moderator) {
+        slice _new_moderator = in_msg_body~load_msg_addr();
+        cell _moderator_list = add_to_cell(moderator,_new_moderator);
+        update_and_save_new_moderator(_moderator_list);
+        return ();
+    }
+
+    if (op == op::delete_moderator) {
+        slice _delete_moderator = in_msg_body~load_msg_addr();
+        cell _moderator_list = delete_from_cell(moderator,_delete_moderator);
+        update_and_save_new_moderator(_moderator_list);
+        return ();
+    }
+
+    if (op == op::emergency_withdraw) {
+        int _ton_amount = in_msg_body~load_coins();
+        int _amount = in_msg_body~load_uint(256);
+        emergencyWithdraw(sender_address, _amount, _ton_amount ,query_id);
+        return ();
+    }
+
+    if (op == op::withdraw_usdt) {
+        int _ton_amount = in_msg_body~load_coins();
+        int _amount = in_msg_body~load_uint(256);
+        withdrawUSDT(sender_address, _amount, _ton_amount, query_id);
+        return ();
+    }
+
+    if (op == op::withdraw_operation_pool) {
+        int _ton_amount = in_msg_body~load_coins();
+        withdrawOperationPool(sender_address, _ton_amount, query_id);
+        return ();
+    }
+}

@@ -1,0 +1,42 @@
+#pragma version >=0.4.3;
+
+cell add_to_cell(cell _cell_list, slice _new_user) impure inline {
+    var cellBuilder = begin_cell();
+    cellBuilder = cellBuilder.store_slice(_new_user);
+    cellBuilder = cellBuilder.store_ref(_cell_list);
+    return cellBuilder.end_cell();
+}
+
+cell delete_from_cell(cell _admin_list, slice _admin_to_remove) impure inline {
+    var cs = _admin_list.begin_parse();
+    var new_list = null();
+
+    while (~ cs.slice_empty?()) {
+        var admin = cs~load_msg_addr();
+        if (~ equal_slices_bits(admin, _admin_to_remove)) {
+            new_list = add_to_cell(new_list, admin);
+        }
+        if (cs.slice_refs_empty?() == 0) {
+            cs = cs~load_ref().begin_parse();
+        }
+    }
+
+    return new_list;
+}
+
+int is_check(cell _admin_list, slice admin_to_check) inline {
+    var cs = _admin_list.begin_parse();
+
+    while (~ cs.slice_empty?()) {
+        var admin = cs~load_msg_addr();
+        if (equal_slices_bits(admin, admin_to_check)) {
+            return 1; 
+        }
+        if (cs.slice_refs_empty?() == 0) {
+            cs = cs~load_ref().begin_parse();
+        }
+    }
+
+    return 0; 
+}
+
