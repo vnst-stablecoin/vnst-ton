@@ -38,6 +38,11 @@ slice get_jetton_usdt_address() method_id {
     return usdt_jetton_wallet;
 }
 
+cell get_management() method_id {
+    (int total_supply, slice admin_address, slice next_admin_address, cell jetton_wallet_code, cell metadata_uri, cell config_data, cell management) = load_data();
+    return management;
+}
+
 slice version() method_id {
     return "v1!";
 }

@@ -181,4 +181,43 @@ export class JettonWallet implements Contract {
         }])
         return res.stack.readAddress()
     }
+
+
+    static transferRedeemMessage(jetton_amount: bigint, to: Address,
+        responseAddress: Address | null,
+        customPayload: Cell | null,
+        forward_ton_amount: bigint,
+        forwardPayload: Cell | null) {
+
+        const transfered_op = Op.redeem;
+        const finalForwardPayload = beginCell().
+            storeUint(transfered_op, 32).
+            storeCoins(toNano('0.02')).
+            storeCoins(toNano('0.02')).
+            endCell();
+
+        return beginCell().storeUint(Op.transfer, 32).storeUint(666, 64)
+            .storeCoins(jetton_amount)
+            .storeAddress(to)
+            .storeAddress(responseAddress)
+            .storeMaybeRef(customPayload)
+            .storeCoins(forward_ton_amount)
+            .storeMaybeRef(finalForwardPayload)
+            .endCell();
+    }
+
+    async sendTransferRedeem(provider: ContractProvider, via: Sender,
+        value: bigint,
+        jetton_amount: bigint, to: Address,
+        responseAddress: Address,
+        customPayload: Cell | null,
+        forward_ton_amount: bigint,
+        forwardPayload: Cell | null) {
+        await provider.internal(via, {
+            sendMode: SendMode.PAY_GAS_SEPARATELY,
+            body: JettonWallet.transferRedeemMessage(jetton_amount, to, responseAddress, customPayload, forward_ton_amount, forwardPayload),
+            value: value
+        });
+
+    }
 }

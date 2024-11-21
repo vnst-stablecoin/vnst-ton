@@ -2,13 +2,13 @@ import { Address, Cell, toNano } from '@ton/core';
 import { JettonMinter, createConfigCell, createManagementUser } from '../wrappers/JettonMinter';
 import { compile, NetworkProvider } from '@ton/blueprint';
 import { jettonWalletCodeFromLibrary } from "../wrappers/ui-utils";
-import { Config } from "../Config"
+import { Config } from "../config"
 
 export async function run(provider: NetworkProvider) {
     const isTestnet = provider.network() !== 'mainnet';
     const jettonWalletCodeRaw = await compile('JettonWallet');
 
-    const defaultAdminAddress = Config.MODERATOR_ADDRESS;
+    const defaultAdminAddress = Config.OWNER_ADDRESS;
     const jettonWalletCode = jettonWalletCodeFromLibrary(jettonWalletCodeRaw);
     // Default values for config data
     const market_price = 25000000000;
@@ -24,12 +24,12 @@ export async function run(provider: NetworkProvider) {
     const max_mint_limit = 2000 * 10 ** 6;
     const operation_pool = 0;
     const redeem_fee = 1000;
-    const max_redeem_limit = 5000000000 * 10 ** 6;
+    const max_redeem_limit = 50000000 * 10 ** 6;
     const mint_fee = 0;
     const mint_status = 1; // True
     const redeem_status = 1; // True
-    const max_mint_limit_verified_user = 5000 * 10 ** 6;;
-    const max_redeem_limit_verified_user = 200000000 * 10 ** 6;
+    const max_mint_limit_verified_user = 40000 * 10 ** 6;;
+    const max_redeem_limit_verified_user = 1000000000 * 10 ** 6;
     // Create a single config cell with all the parts
     const configData = {
         usdt_pool,
@@ -68,5 +68,5 @@ export async function run(provider: NetworkProvider) {
     },
         await compile('JettonMinter')));
 
-    await minter.sendDeploy(provider.sender(), toNano("0.5")); // send 1.5 TON
+    await minter.sendDeploy(provider.sender(), toNano("1.5")); // send 1.5 TON
 } 

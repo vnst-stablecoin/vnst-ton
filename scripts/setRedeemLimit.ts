@@ -9,23 +9,15 @@ import {
 import { checkJettonMinter } from "./JettonMinterChecker";
 import { JettonMinter } from '../wrappers/JettonMinter';
 import { Address, toNano } from '@ton/core';
+import { Config } from '../config';
 
 export async function run(provider: NetworkProvider) {
-    const isTestnet = provider.network() !== 'mainnet';
-
     const ui = provider.ui();
-
-    const jettonMinterCode = await compile('JettonMinter');
-    const jettonWalletCodeRaw = await compile('JettonWallet');
-    const jettonWalletCode = jettonWalletCodeFromLibrary(jettonWalletCodeRaw);
-
-    const jettonMinterAddress = await promptUserFriendlyAddress("Enter the address of the jetton minter", ui, isTestnet);
-
     try {
-        const contract = provider.open(JettonMinter.createFromAddress(Address.parse("kQCU7vVNSMmVSqDbsBYEMiKmLNPX1VkxRp_Kcy091qXbGF-1")));
-        const vnst_amount = toNano(50000);
+        const contract = provider.open(JettonMinter.createFromAddress(Address.parse(Config.VNST_JETTON_WALLET_ADDRESS)));
+        const amount = await promptAmount("Enter redeem limit", 6, ui);
 
-        await contract.sendRedeemMaxlimitVnst(provider.sender(), vnst_amount);
+        await contract.sendRedeemMaxlimitVnst(provider.sender(), amount);
         ui.write('Transaction sent');
     } catch (e: any) {
         ui.write(e.message);

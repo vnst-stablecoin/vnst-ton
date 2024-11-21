@@ -58,21 +58,24 @@
 }
 
 () emergencyWithdraw(slice _sender_address, int _amount, int _ton_amount, int _query_id) impure inline {
-    slice status = "emergencyWithdraw";
-    _internal_transfer(_sender_address,_amount, _ton_amount,_query_id, status);
+    (int total_supply, slice admin_address, slice next_admin_address, cell jetton_wallet_code, cell metadata_uri, cell config_data, cell management) = load_data();
+    (cell moderator, cell verified_user, slice usdt_jetton_wallet) = load_management(management);
+    _internal_transfer(usdt_jetton_wallet, _sender_address,_amount, _ton_amount,_query_id, "Emergency Withdraw");
     update_operation_pool(0);
 }
 
 () withdrawUSDT(slice _sender_address, int _amount, int _ton_amount, int _query_id) impure inline {
-    slice status = "withdrawUSDT";
-    _internal_transfer(_sender_address,_amount, _ton_amount,_query_id, status);
+    (int total_supply, slice admin_address, slice next_admin_address, cell jetton_wallet_code, cell metadata_uri, cell config_data, cell management) = load_data();
+    (cell moderator, cell verified_user, slice usdt_jetton_wallet) = load_management(management);
+    _internal_transfer(usdt_jetton_wallet, _sender_address, _amount, _ton_amount, _query_id, "Withdraw USDT");
+     
 }
 
 () withdrawOperationPool(slice _sender_address, int _ton_amount, int _query_id) impure inline {
     (int total_supply, slice admin_address, slice next_admin_address, cell jetton_wallet_code, cell metadata_uri, cell config_data, cell management) = load_data();
     (int usdt_pool, int vnst_pool, int operation_pool, int k) = load_pool(config_data);
-    slice status = "withdrawOperationPool";
-    _internal_transfer(_sender_address,operation_pool, _ton_amount,_query_id, status);
+    (cell moderator, cell verified_user, slice usdt_jetton_wallet) = load_management(management);
+    _internal_transfer(usdt_jetton_wallet, _sender_address, operation_pool, _ton_amount,_query_id, "Withdraw Operation Pool");
     update_and_save_pool(usdt_pool, vnst_pool, 0, k);
 }
 

@@ -11,6 +11,7 @@ import { Address, Cell, fromNano, OpenedContract } from "@ton/core";
 import { JettonMinter, createConfigCell, createManagementUser, parseJettonMinterData } from "../wrappers/JettonMinter";
 import { NetworkProvider, UIProvider } from "@ton/blueprint";
 import { fromUnits } from "./units";
+import { Config } from "../Config";
 
 export const checkJettonMinter = async (
     jettonMinterAddress: {
@@ -132,13 +133,13 @@ export const checkJettonMinter = async (
 
 
     const managerment_user = createManagementUser({
-        moderator: Address.parse("0QDH_lBBtP0HABAuA9V23YBhvwCowwHW1Pss2BK_6DGPLhIX"),
-        verified_user: Address.parse("0QDH_lBBtP0HABAuA9V23YBhvwCowwHW1Pss2BK_6DGPLhIX"),
-        usdt_address: Address.parse("kQBPQshGCtC97yFyPGtckEmvJJujJe2r6AOE8_WAXhomrqsm")
+        moderator: Address.parse(Config.OWNER_ADDRESS),
+        verified_user: Address.parse(Config.OWNER_ADDRESS),
+        usdt_address: Address.parse(Config.OWNER_ADDRESS)
     });
     const configCell = createConfigCell(configData);
-    const defaultAdminAddress = '0QDH_lBBtP0HABAuA9V23YBhvwCowwHW1Pss2BK_6DGPLhIX';
-    const defaultMetadataUrl = 'https://gold-depressed-catfish-974.mypinata.cloud/ipfs/QmZeBWe7V4y3EgSQ6TCmg2prBj7ty5uYGepRNADnN2LXBB';
+    const defaultAdminAddress = 'Config.OWNER_ADDRESS';
+    const defaultMetadataUrl = Config.METADATA_URI;
 
     const jettonMinterContract2 = JettonMinter.createFromConfig({
         admin: Address.parse(defaultAdminAddress),

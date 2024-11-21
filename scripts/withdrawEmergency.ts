@@ -2,7 +2,7 @@ import { NetworkProvider } from '@ton/blueprint';
 
 import { JettonMinter } from '../wrappers/JettonMinter';
 import { Address, toNano } from '@ton/core';
-import { Config } from '../Config';
+import { Config } from '../config';
 import { JettonWallet } from '../wrappers/JettonWallet';
 
 export async function run(provider: NetworkProvider) {

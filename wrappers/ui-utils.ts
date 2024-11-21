@@ -249,7 +249,7 @@ export const sendToIndex = async (method: string, params: any, provider: Network
     const testnetRpc = 'https://testnet.toncenter.com/api/v3/';
     const rpc = isTestnet ? testnetRpc : mainnetRpc;
 
-    // const apiKey = (provider.api() as any).api.parameters.apiKey!;
+    // const apiKey = (provider.api() as any).api.parameters.apiKey!; // todo: provider.api().parameters.apiKey is undefined
 
     const headers = {
         'Content-Type': 'application/json',

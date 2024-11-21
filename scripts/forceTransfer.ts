@@ -1,4 +1,4 @@
-import {compile, NetworkProvider} from '@ton/blueprint';
+import { compile, NetworkProvider } from '@ton/blueprint';
 import {
     addressToString,
     jettonWalletCodeFromLibrary,
@@ -6,9 +6,9 @@ import {
     promptBool,
     promptUserFriendlyAddress
 } from "../wrappers/ui-utils";
-import {checkJettonMinter} from "./JettonMinterChecker";
-import {checkJettonWallet} from "./JettonWalletChecker";
-import {fromUnits} from "./units";
+import { checkJettonMinter } from "./JettonMinterChecker";
+import { checkJettonWallet } from "./JettonWalletChecker";
+import { fromUnits } from "./units";
 
 export async function run(provider: NetworkProvider) {
     const isTestnet = provider.network() !== 'mainnet';
@@ -22,12 +22,12 @@ export async function run(provider: NetworkProvider) {
     const jettonMinterAddress = await promptUserFriendlyAddress("Enter the address of the jetton minter", ui, isTestnet);
 
     try {
-        const {jettonMinterContract, adminAddress, decimals} = await checkJettonMinter(jettonMinterAddress, jettonMinterCode, jettonWalletCode, provider, ui, isTestnet, true);
+        const { jettonMinterContract, adminAddress, decimals } = await checkJettonMinter(jettonMinterAddress, jettonMinterCode, jettonWalletCode, provider, ui, isTestnet, true);
 
         const fromAddress = await promptUserFriendlyAddress("Please enter user address to transfer from:", ui, isTestnet);
         const fromJettonWalletAddress = await jettonMinterContract.getWalletAddress(fromAddress.address);
 
-        const {jettonBalance} = await checkJettonWallet({address: fromJettonWalletAddress, isBounceable: true, isTestOnly: isTestnet}, jettonMinterCode, jettonWalletCode, provider, ui, isTestnet, true);
+        const { jettonBalance } = await checkJettonWallet({ address: fromJettonWalletAddress, isBounceable: true, isTestOnly: isTestnet }, jettonMinterCode, jettonWalletCode, provider, ui, isTestnet, true);
 
         if (!provider.sender().address!.equals(adminAddress)) {
             ui.write('You are not admin of this jetton minter');

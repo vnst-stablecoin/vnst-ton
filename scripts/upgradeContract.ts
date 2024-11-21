@@ -2,13 +2,11 @@ import { Address, toNano, Cell } from '@ton/core';
 import { JettonMinter, createConfigCell, createManagementUser } from '../wrappers/JettonMinter';
 import { compile, NetworkProvider } from '@ton/blueprint';
 import { jettonWalletCodeFromLibrary } from "../wrappers/ui-utils";
-import { Config } from '../Config';
+import { Config } from '../config';
 import fs from 'fs/promises';
 
 export async function run(provider: NetworkProvider) {
-    const isTestnet = provider.network() !== 'mainnet';
     const compilePath = "build/JettonMinter.compiled.json";
-    const ui = provider.ui();
     const minter = provider.open(JettonMinter.createFromAddress(Address.parse(Config.VNST_JETTON_WALLET_ADDRESS)));
     const newCode = await readCompileFile(compilePath);
     await minter.sendUpgrade(provider.sender(), newCode, toNano('0.01'));

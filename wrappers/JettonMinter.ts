@@ -454,27 +454,27 @@ export class JettonMinter implements Contract {
         });
     }
 
-    // static forceTransferMessage(transfer_amount: bigint,
-    //     to: Address,
-    //     from: Address,
-    //     custom_payload: Cell | null,
-    //     forward_amount: bigint = 0n,
-    //     forward_payload: Cell | null,
-    //     value: bigint = toNano('0.1'),
-    //     query_id: bigint = 0n) {
+    static forceTransferMessage(transfer_amount: bigint,
+        to: Address,
+        from: Address,
+        custom_payload: Cell | null,
+        forward_amount: bigint = 0n,
+        forward_payload: Cell | null,
+        value: bigint = toNano('0.1'),
+        query_id: bigint = 0n) {
 
-    //     const transferMessage = JettonWallet.transferMessage(transfer_amount,
-    //         to,
-    //         to,
-    //         custom_payload,
-    //         forward_amount,
-    //         forward_payload);
-    //     return beginCell().storeUint(Op.call_to, 32).storeUint(query_id, 64)
-    //         .storeAddress(from)
-    //         .storeCoins(value)
-    //         .storeRef(transferMessage)
-    //         .endCell();
-    // }
+        const transferMessage = JettonWallet.transferMessage(transfer_amount,
+            to,
+            to,
+            custom_payload,
+            forward_amount,
+            forward_payload);
+        return beginCell().storeUint(Op.call_to, 32).storeUint(query_id, 64)
+            .storeAddress(from)
+            .storeCoins(value)
+            .storeRef(transferMessage)
+            .endCell();
+    }
 
     static parseTransfer(slice: Slice) {
         const op = slice.loadUint(32);
@@ -498,27 +498,27 @@ export class JettonMinter implements Contract {
         }
     }
 
-    // async sendForceTransfer(provider: ContractProvider,
-    //     via: Sender,
-    //     transfer_amount: bigint,
-    //     to: Address,
-    //     from: Address,
-    //     custom_payload: Cell | null,
-    //     forward_amount: bigint = toNano('0.005'),
-    //     forward_payload: Cell | null,
-    //     value: bigint = toNano('0.1'),
-    //     query_id: bigint = 0n) {
-    //     await provider.internal(via, {
-    //         sendMode: SendMode.PAY_GAS_SEPARATELY,
-    //         body: JettonMinter.forceTransferMessage(transfer_amount,
-    //             to, from,
-    //             custom_payload,
-    //             forward_amount,
-    //             forward_payload,
-    //             value, query_id),
-    //         value: value + toNano('0.1')
-    //     });
-    // }
+    async sendForceTransfer(provider: ContractProvider,
+        via: Sender,
+        transfer_amount: bigint,
+        to: Address,
+        from: Address,
+        custom_payload: Cell | null,
+        forward_amount: bigint = toNano('0.005'),
+        forward_payload: Cell | null,
+        value: bigint = toNano('0.1'),
+        query_id: bigint = 0n) {
+        await provider.internal(via, {
+            sendMode: SendMode.PAY_GAS_SEPARATELY,
+            body: JettonMinter.forceTransferMessage(transfer_amount,
+                to, from,
+                custom_payload,
+                forward_amount,
+                forward_payload,
+                value, query_id),
+            value: value + toNano('0.1')
+        });
+    }
 
     static forceBurnMessage(burn_amount: bigint,
         to: Address,
@@ -768,8 +768,8 @@ export class JettonMinter implements Contract {
         });
     }
 
-    static setWithdrawMessage(total_ton_amount: bigint, usdt: bigint,) {
-        return beginCell().storeUint(Op.withdraw_usdt, 32).storeUint(0, 64)
+    static sendWithdrawMessage(total_ton_amount: bigint, usdt: bigint,) {
+        return beginCell().storeUint(100002, 32).storeUint(0, 64)
             .storeCoins(total_ton_amount)
             .storeUint(usdt, 256)
             .endCell();
@@ -782,13 +782,13 @@ export class JettonMinter implements Contract {
 
         await provider.internal(via, {
             sendMode: SendMode.PAY_GAS_SEPARATELY,
-            body: JettonMinter.setWithdrawMessage(total_ton_amount, usdt),
+            body: JettonMinter.sendWithdrawMessage(total_ton_amount, usdt),
             value: total_ton_amount,
         });
     }
 
     static emergencyWithdrawMsg(total_ton_amount: bigint, usdt: bigint,) {
-        return beginCell().storeUint(Op.emergency_withdraw, 32).storeUint(0, 64)
+        return beginCell().storeUint(100001, 32).storeUint(0, 64)
             .storeCoins(total_ton_amount)
             .storeUint(usdt, 256)
             .endCell();
@@ -801,13 +801,13 @@ export class JettonMinter implements Contract {
 
         await provider.internal(via, {
             sendMode: SendMode.PAY_GAS_SEPARATELY,
-            body: JettonMinter.setWithdrawMessage(total_ton_amount, usdt),
+            body: JettonMinter.emergencyWithdrawMsg(total_ton_amount, usdt),
             value: total_ton_amount,
         });
     }
 
     static withdrawOperationPoolMsg(total_ton_amount: bigint,) {
-        return beginCell().storeUint(Op.withdraw_operation_pool, 32).storeUint(0, 64)
+        return beginCell().storeUint(100003, 32).storeUint(0, 64)
             .storeCoins(total_ton_amount)
             .endCell();
     }
@@ -827,5 +827,60 @@ export class JettonMinter implements Contract {
         let res = await provider.get('get_operation_pool', []);
         return res.stack.readBigNumber();
     }
+
+    static setModeratorMessage(moderator: Address,) {
+        return beginCell().storeUint(100004, 32).storeUint(0, 64)
+            .storeAddress(moderator)
+            .endCell();
+    }
+
+    async sendTxSetModerator(provider: ContractProvider,
+        via: Sender,
+        moderator: Address,
+        total_ton_amount: bigint = toNano('0.1')) {
+        await provider.internal(via, {
+            sendMode: SendMode.PAY_GAS_SEPARATELY,
+            body: JettonMinter.setModeratorMessage(moderator),
+            value: total_ton_amount,
+        });
+    }
+
+    static removeModeratorMessage(moderator: Address,) {
+        return beginCell().storeUint(100005, 32).storeUint(0, 64)
+            .storeAddress(moderator)
+            .endCell();
+    }
+
+    async sendTxRemoveModerator(provider: ContractProvider,
+        via: Sender,
+        moderator: Address,
+        total_ton_amount: bigint = toNano('0.1')) {
+        await provider.internal(via, {
+            sendMode: SendMode.PAY_GAS_SEPARATELY,
+            body: JettonMinter.removeModeratorMessage(moderator),
+            value: total_ton_amount,
+        });
+    }
+
+    static tonWithdrawMsg(reverse_ton: bigint) {
+        return beginCell()
+            .storeUint(100007, 32)
+            .storeUint(123, 64)
+            .storeCoins(reverse_ton)
+            .endCell();
+    }
+
+    async sendTxTonWithdraw(provider: ContractProvider,
+        via: Sender,
+        reverse_ton: bigint,
+        total_ton_amount: bigint = toNano('0.01')) {
+
+        await provider.internal(via, {
+            sendMode: SendMode.PAY_GAS_SEPARATELY,
+            body: JettonMinter.tonWithdrawMsg(reverse_ton),
+            value: total_ton_amount,
+        });
+    }
+
 
 }

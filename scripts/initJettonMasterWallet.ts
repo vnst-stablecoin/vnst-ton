@@ -2,7 +2,7 @@ import { NetworkProvider } from '@ton/blueprint';
 import { JettonMinter } from '../wrappers/JettonMinter';
 import { JettonWallet } from '../wrappers/JettonWallet';
 import { Address } from '@ton/core';
-import { Config } from "../Config"
+import { Config } from "../config"
 
 export async function run(provider: NetworkProvider) {
     const isTestnet = provider.network() !== 'mainnet';

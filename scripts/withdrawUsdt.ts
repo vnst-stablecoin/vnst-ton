@@ -18,15 +18,16 @@ export async function run(provider: NetworkProvider) {
         const vnstValletUsdt = provider.open(JettonWallet.createFromAddress(jettonWallet));
         const balance = await vnstValletUsdt.getJettonBalance();
         const operation_pool = await contract.getOperationPool();
-
         const amount = await promptAmount("Enter amount to withdraw", 6, ui);
         if (balance - amount < operation_pool) {
             ui.write('usdt_insufficient');
             return;
         } else {
-            await contract.sendTxWithdraw(provider.sender(), BigInt(amount));
+            await contract.sendTxWithdraw(provider.sender(), amount);
         }
-        ui.write('Transaction set mint fee sent');
+        await contract.sendTxWithdraw(provider.sender(), amount);
+
+        ui.write('Transaction withdraw usdt sent');
     } catch (e: any) {
         ui.write(e.message);
         return;

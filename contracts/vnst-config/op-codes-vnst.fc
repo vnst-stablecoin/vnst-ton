@@ -20,6 +20,7 @@ const op::withdraw_operation_pool = 100003;
 const op::add_moderator = 100004;
 const op::delete_moderator = 100005;
 const op::get_moderator = 100006;
+const op::withdraw_ton = 100007;
 
 const error::wrong_op_1001 = 1001;
 const error::wrong_op_1002 = 1002;
@@ -29,3 +30,5 @@ const error::wrong_op_1005 = 1005;
 const error::wrong_op_1006 = 1006;
 const error::wrong_op_1007 = 1007;
 const error::wrong_op_1008 = 1008;
+const error::not_moderator = 1010;
+const error::not_enough_gas_forward = 1011;
